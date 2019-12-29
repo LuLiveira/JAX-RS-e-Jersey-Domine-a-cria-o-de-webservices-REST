@@ -8,14 +8,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.thoughtworks.xstream.XStream;
 
-import br.com.alura.loja.modelo.Carrinho;
-import br.com.alura.loja.modelo.Produto;
 import br.com.alura.loja.modelo.Projeto;
 import junit.framework.Assert;
 
@@ -27,6 +27,10 @@ public class ProjetoTest {
 	@Before
 	public void startServer() {
 		this.server = Servidor.inicializaServer();
+		ClientConfig config = new ClientConfig();
+		config.register(new LoggingFilter());
+
+		client = ClientBuilder.newClient(config);
 		message("Server running...");
 	}
 
@@ -38,7 +42,6 @@ public class ProjetoTest {
 
 	@Test
 	public void testaConexaoComOProjetoResource() {
-		client = ClientBuilder.newClient();
 		WebTarget target = client.target("http://localhost:8080/");
 		String response = target.path("projetos/1").request().get(String.class);
 		Projeto result = (Projeto) new XStream().fromXML(response);
@@ -47,7 +50,7 @@ public class ProjetoTest {
 
 	@Test
 	public void testaQueSuportaNovosProjetos() {
-		client = ClientBuilder.newClient();
+
 		WebTarget target = client.target("http://localhost:8080/");
 
 		Projeto projeto = new Projeto(3l, "Status code e a Interface Uniforme", 2019);
