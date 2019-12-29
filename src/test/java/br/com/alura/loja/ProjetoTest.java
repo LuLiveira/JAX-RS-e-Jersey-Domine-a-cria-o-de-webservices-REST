@@ -38,7 +38,7 @@ public class ProjetoTest {
 	public void testaConexaoComOProjetoResource() {
 		Client client = ClientBuilder.newClient();
 		WebTarget target = client.target("http://localhost:8080/");
-		String response = target.path("projetos").request().get(String.class);
+		String response = target.path("projetos/1").request().get(String.class);
 		Projeto result = (Projeto) new XStream().fromXML(response);
 		Assert.assertTrue(result.getId() == 1);
 	}
