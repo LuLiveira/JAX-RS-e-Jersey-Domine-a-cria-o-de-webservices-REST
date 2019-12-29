@@ -21,6 +21,7 @@ import junit.framework.Assert;
 public class ClientTest {
 
 	private HttpServer server;
+	private Client client;
 
 	@Before
 	public void startServer() {
@@ -34,7 +35,7 @@ public class ClientTest {
 	
 	@Test
 	public void testaQueBuscarUmCarrinhoTrazOCarrinhoEsperado() {
-		Client client = ClientBuilder.newClient();
+		client = ClientBuilder.newClient();
 		WebTarget target = client.target("http://localhost:8080/");
 		String response = target.path("carrinhos/1").request().get(String.class);
 		Carrinho carrinho = (Carrinho) new XStream().fromXML(response);
@@ -43,7 +44,7 @@ public class ClientTest {
 	
 	@Test
 	public void testaQueSuportaNovosCarrinhos() {
-		Client client = ClientBuilder.newClient();
+		client = ClientBuilder.newClient();
 		WebTarget target = client.target("http://localhost:8080/");
 		
 		Carrinho carrinho = new Carrinho();
@@ -56,7 +57,11 @@ public class ClientTest {
         Entity<String> entity = Entity.entity(xml, MediaType.APPLICATION_XML);
         
         Response response = target.path("carrinhos").request().post(entity);
-        Assert.assertEquals("<status>sucesso</status>", response.readEntity(String.class));
+        Assert.assertEquals(201, response.getStatus());
+        
+        String location = response.getHeaderString("Location");
+        String content = client.target(location).request().get(String.class);
+        Assert.assertTrue(content.contains("Tablet"));
 	}
 
 }

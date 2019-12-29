@@ -2,7 +2,10 @@ package br.com.alura.loja;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.junit.After;
@@ -11,12 +14,15 @@ import org.junit.Test;
 
 import com.thoughtworks.xstream.XStream;
 
+import br.com.alura.loja.modelo.Carrinho;
+import br.com.alura.loja.modelo.Produto;
 import br.com.alura.loja.modelo.Projeto;
 import junit.framework.Assert;
 
 public class ProjetoTest {
 
 	private HttpServer server;
+	private Client client;
 
 	@Before
 	public void startServer() {
@@ -32,11 +38,31 @@ public class ProjetoTest {
 
 	@Test
 	public void testaConexaoComOProjetoResource() {
-		Client client = ClientBuilder.newClient();
+		client = ClientBuilder.newClient();
 		WebTarget target = client.target("http://localhost:8080/");
 		String response = target.path("projetos/1").request().get(String.class);
 		Projeto result = (Projeto) new XStream().fromXML(response);
 		Assert.assertTrue(result.getId() == 1);
+	}
+
+	@Test
+	public void testaQueSuportaNovosProjetos() {
+		client = ClientBuilder.newClient();
+		WebTarget target = client.target("http://localhost:8080/");
+
+		Projeto projeto = new Projeto(3l, "Status code e a Interface Uniforme", 2019);
+
+		String xml = new XStream().toXML(projeto);
+
+		Entity<String> entity = Entity.entity(xml, MediaType.APPLICATION_XML);
+
+		Response response = target.path("projetos").request().post(entity);
+		Assert.assertEquals(201, response.getStatus());
+
+		String location = response.getHeaderString("Location");
+		String content = client.target(location).request().get(String.class);
+		Assert.assertTrue(content.contains("Status code e a Interface Uniforme"));
+
 	}
 
 	private static void message(String s) {
