@@ -43,9 +43,8 @@ public class ProjetoTest {
 	@Test
 	public void testaConexaoComOProjetoResource() {
 		WebTarget target = client.target("http://localhost:8080/");
-		String response = target.path("projetos/1").request().get(String.class);
-		Projeto result = (Projeto) new XStream().fromXML(response);
-		Assert.assertTrue(result.getId() == 1);
+		Projeto projeto = target.path("projetos/1").request().get(Projeto.class);
+		Assert.assertTrue(projeto.getId() == 1);
 	}
 
 	@Test
@@ -55,16 +54,15 @@ public class ProjetoTest {
 
 		Projeto projeto = new Projeto(3l, "Status code e a Interface Uniforme", 2019);
 
-		String xml = new XStream().toXML(projeto);
 
-		Entity<String> entity = Entity.entity(xml, MediaType.APPLICATION_XML);
+		Entity<Projeto> entity = Entity.entity(projeto, MediaType.APPLICATION_XML);
 
 		Response response = target.path("projetos").request().post(entity);
 		Assert.assertEquals(201, response.getStatus());
 
 		String location = response.getHeaderString("Location");
-		String content = client.target(location).request().get(String.class);
-		Assert.assertTrue(content.contains("Status code e a Interface Uniforme"));
+		Projeto content = client.target(location).request().get(Projeto.class);
+		Assert.assertEquals("Status code e a Interface Uniforme", content.getNome());
 
 	}
 
